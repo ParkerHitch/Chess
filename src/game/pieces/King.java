@@ -14,6 +14,9 @@ public class King extends Piece {
 		super(Team.WHITE, rank, file);
 	}
 
+	/*
+	 * Returns a list of possible moves for the piece ignoring check
+	 */
 	public ArrayList<int[]> getPossibleMoves() {
 
 		ArrayList<int[]> out = new ArrayList<>();
@@ -39,7 +42,7 @@ public class King extends Piece {
 
 		return out;
 
-		/*//Can't capture own pieces
+		/* Old code for couldMoveTo(rank, file). Would return if a piece could move to a square ignoring check
 		if (Game.getSquare(rank, file) != null && Game.getSquare(rank, file).getTeam() == super.team)
 			return false;
 

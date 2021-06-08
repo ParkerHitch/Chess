@@ -18,19 +18,19 @@ public class Game {
 	private static King blackKing;
 
 	private static Hashtable<Integer, ArrayList<int[]>> validMoves;
+
 	public static void newGame() {
 		move = 1;
-		board = new Piece[][]
-			{{new Rook(0,0), new Knight(0,1), new Bishop(0,2), new Queen(0,3), new King(0,4), new Bishop(0,5), new Knight(0,6), new Rook(0,7)},
-			{new Pawn(1,0),new Pawn(1,1),new Pawn(1,2),new Pawn(1,3),new Pawn(1,4),new Pawn(1,5),new Pawn(1,6),new Pawn(1,7)},
-			{null,null,null,null,null,null,null,null},
-			{null,null,null,null,null,null,null,null},
-			{null,null,null,null,null,null,null,null},
-			{null,null,null,null,null,null,null,null},
-			{new Pawn(Team.BLACK, 6, 0),new Pawn(Team.BLACK, 6, 1),new Pawn(Team.BLACK, 6, 2),new Pawn(Team.BLACK, 6, 3),new Pawn(Team.BLACK, 6, 4),new Pawn(Team.BLACK, 6, 5),new Pawn(Team.BLACK, 6, 6),new Pawn(Team.BLACK, 6, 7)},
-			{new Rook(Team.BLACK, 7, 0), new Knight(Team.BLACK, 7, 1), new Bishop(Team.BLACK, 7, 2), new Queen(Team.BLACK, 7, 3), new King(Team.BLACK, 7, 4), new Bishop(Team.BLACK, 7, 5), new Knight(Team.BLACK, 7, 6), new Rook(Team.BLACK, 7, 7)}};
+		board = Scenarios.getNormal();
 		whiteKing = (King) board[0][4];
 		blackKing = (King) board[7][4];
+		validMoves = getAllValidMoves();
+	}
+	public static void loadEndgame(){
+		move = 1;
+		board = Scenarios.getEndgame();
+		whiteKing = (King) board[6][3];
+		blackKing = (King) board[6][0];
 		validMoves = getAllValidMoves();
 	}
 	
@@ -61,6 +61,9 @@ public class Game {
 				case "restart":
 				case "new game":
 					newGame();
+					break;
+				case "endgame":
+					loadEndgame();
 					break;
 				default:
 					try {
@@ -145,8 +148,8 @@ public class Game {
 		});
 		if (!good.get())
 			throw new InvalidInputException();
-		//Pawn promotion. New queen will be moved to 8th rank when makeMove is called. Cannot en passant into promotion.
-		if(moving instanceof Pawn && to[0] == 8)
+		//Pawn promotion. New queen will be moved to 8th rank when makeMove is called
+		 if (moving instanceof Pawn && to[0] == 7)
 			board[from[0]][from[1]] = new Queen(getMovingTeam(), from[0], from[1]);
 
 		//Make move on real board:
@@ -183,8 +186,8 @@ public class Game {
 
 		//King position
 		int[] king;
-		if(getSquare(from) instanceof King) {
-			king = from;
+		if(getSquare(to) instanceof King) {
+			king = to;
 		} else {
 			king = getMovingTeam()==Team.WHITE ? whiteKing.getPos() : blackKing.getPos();
 		}
@@ -229,6 +232,7 @@ public class Game {
 							if(r==(getMovingTeam()==Team.WHITE?1:-1))
 								return true;
 						}
+						break;
 					} else {
 						break;
 					}
@@ -269,11 +273,22 @@ public class Game {
 			}
 		}
 
-		return false;
-	}
+		//Check for king:
+		for(int r = -1; r <= 1; r++){
+			for(int f = -1; f <= 1; f++){
+				if(r==0&&f==0)
+					continue;
+				int[] checking = new int[]{square[0]+r, square[1]+f};
+				Piece p;
+				if (Game.inBounds(checking)) {
+					p = getSquare(checking);
+					if(p instanceof King && p.getTeam()!=getMovingTeam())
+						return true;
+				}
+			}
+		}
 
-	public static boolean inBounds(int[] square){
-		return square[0] <= 7 && square[0] >= 0 && square[1] <= 7 && square[1] >= 0;
+		return false;
 	}
 
 	public static void makeMove(int[] to, int[] from){
@@ -281,9 +296,14 @@ public class Game {
 		board[to[0]][to[1]] = getSquare(from);
 		board[from[0]][from[1]] = null;
 		move++;
+		System.out.println();
 		validMoves = getAllValidMoves();
 	}
 
+	public static boolean inBounds(int[] square){ return inBounds(square[0], square[1]); }
+	public static boolean inBounds(int rank, int file){
+		return rank <= 7 && rank >= 0 && file <= 7 && file >= 0;
+	}
 	public static int getMoveNumber() { return move; };
 	public static Team getMovingTeam() { return move%2==1?Team.WHITE:Team.BLACK; }
 	public static Piece getSquare(int rank, int file) { return board[rank][file]; }

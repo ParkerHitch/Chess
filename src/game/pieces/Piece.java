@@ -5,7 +5,7 @@ import game.util.*;
 
 import java.util.ArrayList;
 
-public abstract class Piece implements Cloneable {
+public abstract class Piece {
 
 	protected int lastMoved = 0;
 	protected final Team team;

@@ -27,7 +27,7 @@ public class Pawn extends Piece {
 		return firstMoved;
 	}
 	/*
-	 * Checks if a piece could move to a square ignoring checks
+	 * Returns a list of possible moves for the piece ignoring check
 	 */
 	public ArrayList<int[]> getPossibleMoves() {
 
@@ -38,7 +38,8 @@ public class Pawn extends Piece {
 		//Moving forward
 		if(Game.getSquare(super.rank+mDir,super.file)==null) {
 			out.add(new int[]{super.rank + mDir, super.file});
-			if(super.lastMoved==0 && Game.getSquare(super.rank+2*mDir,super.file)==null)
+			//Inbounds only for scenarios
+			if(super.lastMoved==0 && Game.inBounds(super.rank+2*mDir,super.file) && Game.getSquare(super.rank+2*mDir,super.file)==null)
 				out.add(new int[]{super.rank + 2*mDir, super.file});
 		}
 
@@ -53,11 +54,9 @@ public class Pawn extends Piece {
 
 		return out;
 
-		/*//Can't capture own pieces
+		/* Old code for couldMoveTo(rank, file). Would return if a piece could move to a square ignoring check
 		if(Game.getSquare(rank, file) != null && Game.getSquare(rank, file).getTeam() == super.team)
 			return false;
-		
-		//Multiplier to invert things for black
 
 		//Only move forward
 		if((super.team==Team.WHITE&&rank<=super.rank)||(super.team==Team.BLACK&&rank>=super.rank))
